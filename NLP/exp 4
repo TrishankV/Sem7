@@ -1,0 +1,53 @@
+import ssl
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.corpus import wordnet
+import spacy
+
+# Create an SSL context that doesn't verify certificates
+ssl._create_default_https_context = ssl._create_unverified_context
+
+# Sample text
+text = "The children are happily playing in the garden."
+
+# Download necessary NLTK data
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
+
+# Tokenize the text
+tokens = word_tokenize(text.lower())
+print("Tokens:", tokens)
+
+# Stemming
+stemmer = PorterStemmer()
+stemmed_words = [stemmer.stem(token) for token in tokens]
+print("Stemmed Words:", stemmed_words)
+
+# Lemmatization
+lemmatizer = WordNetLemmatizer()
+
+def get_wordnet_pos(word):
+    tag = nltk.pos_tag([word])[0][1][0].upper()
+    tag_dict = {"J": wordnet.ADJ, "N": wordnet.NOUN, "V": wordnet.VERB, "R": wordnet.ADV}
+    return tag_dict.get(tag, wordnet.NOUN)
+
+lemmatized_words = [lemmatizer.lemmatize(token, get_wordnet_pos(token)) for token in tokens]
+print("Lemmatized Words:", lemmatized_words)
+
+# Word Generation
+roots = ["play", "garden"]
+suffixes = ["er", "ing", "ful"]
+
+new_words = [root + suffix for root in roots for suffix in suffixes]
+print("Generated Words:", new_words)
+
+# Load SpaCy model
+nlp = spacy.load("en_core_web_sm")
+
+# Validate generated words using SpaCy
+for word in new_words:
+    doc = nlp(word)
+    for token in doc:
+        print(f"Word: {token.text}, Lemma: {token.lemma_}, POS: {token.pos_}")
